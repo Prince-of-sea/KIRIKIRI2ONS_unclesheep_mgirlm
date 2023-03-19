@@ -1,0 +1,119 @@
+;mode800
+*define
+
+caption "魔女魔少魔法魔 for ONScripter"
+
+rmenu "記憶",save,"追想",load,"疾駆",skip,"隠蔽",windowerase,"冒頭",reset
+savename "セーブ","ロード","データ"
+savenumber 18
+transmode alpha
+globalon
+rubyon
+nsa
+humanz 10
+windowback
+
+
+pretextgosub *pretext_lb
+defsub title_mmmm
+
+effect  8,10,1000
+effect  9,10,200
+effect 10,10,500
+
+;<<-EFFECT->>
+
+game
+;----------------------------------------
+*pretext_lb
+	lsp 10,":s/24,24,0;#ffffff"+$11,32,440 ;名前の表示
+	saveon
+return
+
+*title_mmmm
+	bg "data\image\魔女魔少魔法魔1.png",9
+	wait 200
+	bg "data\image\魔女魔少魔法魔2.png",9
+	wait 200
+	bg "data\image\魔女魔少魔法魔3.png",9
+	wait 200
+	bg "data\image\魔女魔少魔法魔4.png",9
+	wait 200
+	bg "data\image\魔女魔少魔法魔5.png",9
+	wait 200
+	bg "data\image\魔女魔少魔法魔6.png",9
+	wait 200
+	bg "data\image\魔女魔少魔法魔7.png",9
+	wait 1000
+	
+	dwave 0,"data\sound\きしみ2.ogg"
+	
+	bg "data\image\魔女魔少魔法魔7'.png",8
+	wait 1000
+	bg "data\image\魔女魔少魔法魔7''.png",9
+	wait 1000
+	bg black,8
+return
+;----------------------------------------
+*start
+
+
+;原作仕様 - 初期状態ではコメントアウト
+;setwindow3 32,470,34,4,22,22,0,2,20,1,1,#999999,16,424,783,583
+
+;ちょっと拡大
+setwindow3 32,470,30,4,24,24,0,2,20,1,1,#999999,16,424,783,583
+
+;debug
+;mov %200,1
+
+bgmvol 60
+sevol 60
+voicevol 60
+
+
+setcursor 0,":a/11,80,2;data\system\LineBreak_a.png"
+setcursor 1,":a/11,80,2;data\system\PageBreak_a.png"
+
+bg "data\image\title.png",8
+wait 1000
+bg black,8
+
+bgm "data\bgm\zigoku10.ogg"
+
+if %200!=1 bg "data\image\mgirlm_title1.png",8
+if %200==1 bg "data\image\mgirlm_title_B_86.png",8
+
+if %200!=1 lsp 11,":a/3,0,3;data\image\start_mgirlm.png" ,666+24,344+24
+if %200!=1 lsp 12,":a/3,0,3;data\image\load_mgirlm.png"  ,666+24,399+24
+if %200!=1 lsp 13,":a/3,0,3;data\image\config_mgirlm.png",667+24,454+24
+if %200!=1 lsp 14,":a/3,0,3;data\image\music_mgirlm.png" ,666+24,509+24
+
+if %200==1 lsp 11,":a/3,0,3;data\image\start_mgirlm_B_86.png" ,666+24,344+24
+if %200==1 lsp 12,":a/3,0,3;data\image\load_mgirlm_B_86.png"  ,666+24,399+24
+if %200==1 lsp 13,":a/3,0,3;data\image\config_mgirlm_B_86.png",667+24,454+24
+if %200==1 lsp 14,":a/3,0,3;data\image\music_mgirlm_B_86.png" ,666+24,509+24
+
+lsp 15,":s#FFFFFF#888888Ｘ",775,2
+
+print 1
+
+*title_loop
+	bclear
+	
+	spbtn 11,11
+	spbtn 12,12
+	spbtn 13,13
+	spbtn 14,14
+	spbtn 15,15
+	
+	btnwait %0
+	
+	if %0==11 dwave 0,"data\sound\凛.ogg":bgmstop:csp -1:goto *scenario
+	if %0==12 bgmstop:csp -1:bg "data\image\title1.png",1:systemcall load:reset
+	if %0==15 bgmstop:csp -1:bg black,9:end
+	
+goto *title_loop
+;----------------------------------------
+*scenario
+
