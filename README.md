@@ -1,7 +1,7 @@
 # KIRIKIRI2ONS_unclesheep_mgirlm
 
 ## なにこれ
-  2020年に羊おじさん倶楽部様から発売された、18禁PC向けノベルゲーム'[魔女魔少魔法魔](https://unclesheepclub.web.fc2.com/letters/mgirlm/mgirlm.html)'を<br>
+  2020年に羊おじさん倶楽部様から発売された、15禁PC向けノベルゲーム'[魔女魔少魔法魔](https://unclesheepclub.web.fc2.com/letters/mgirlm/mgirlm.html)'を<br>
   ONScripter形式へ変換するためのコンバータです<br>
 
 ## 再現度
