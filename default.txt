@@ -15,7 +15,9 @@ windowback
 
 
 pretextgosub *pretext_lb
+loadgosub *loadlb
 defsub title_mmmm
+defsub rsf
 
 effect  8,10,1000
 effect  9,10,200
@@ -28,6 +30,10 @@ game
 *pretext_lb
 	lsp 10,":s/24,24,0;#ffffff"+$11,32,440 ;名前の表示
 	saveon
+return
+
+*loadlb
+	setwindow3 32,470,30,4,24,24,0,2,20,1,1,#999999,16,424,783,583
 return
 
 *title_mmmm
@@ -54,15 +60,14 @@ return
 	wait 1000
 	bg black,8
 return
+
+*rsf
+	setwindow3 32,470,30,4,24,24,0,2,20,1,1,#999999,16,424,783,583
+return
 ;----------------------------------------
 *start
 
-
-;原作仕様 - 初期状態ではコメントアウト
-;setwindow3 32,470,34,4,22,22,0,2,20,1,1,#999999,16,424,783,583
-
-;ちょっと拡大
-setwindow3 32,470,30,4,24,24,0,2,20,1,1,#999999,16,424,783,583
+rsf
 
 ;debug
 ;mov %200,1

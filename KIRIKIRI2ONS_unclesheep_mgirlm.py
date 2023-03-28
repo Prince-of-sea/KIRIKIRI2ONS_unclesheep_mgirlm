@@ -101,7 +101,7 @@ def text_cnv(default, zero_txt, scenario):
 		fr = re.sub(r'\[font (.+?)\]', r'[font \1]\n', fr)# 文章とfont指定が1行になってることが多いので剥がす
 		fr = fr.replace(r'[resetfont]', '\n' + r'[resetfont]')# resetfontも同様
 		fr = re.sub(r'\@(.+?)\n', r'[\1]\n', fr)# @からの命令も[]同様に処理したいので
-		fr = fr.replace(r'[pcm]', '\\\nmov $11,""')# セリフの名前部分を空に
+		fr = fr.replace(r'[pcm]', '\\\nmov $11,""' + r':rsf')# セリフの名前部分を空に
 		fr = fr.replace(r'[lr]', '@')# 文章停止
 
 
@@ -364,7 +364,15 @@ def text_cnv(default, zero_txt, scenario):
 				#暗転
 				elif kr_cmd == 'anten' or kr_cmd == 'anten1':
 					line = 'csp -1:bg black,9'
-				
+
+				#フォントサイズ変更
+				elif kr_cmd == 'font':
+					line = r'setwindow3 32,470,15,4,'+d['size']+r'/3*2,'+d['size']+r'/3*2,0,2,20,1,1,#999999,16,424,783,583'
+
+				#フォントサイズ戻す
+				elif kr_cmd == 'resetfont':
+					line = r'rsf'
+
 				#他
 				else:
 					if DEBUG_MODE:
@@ -464,10 +472,11 @@ def main(debug):
 	text_cnv(PATH_DICT['default'], PATH_DICT2['0_txt'], PATH_DICT['scenario'])
 
 	#不要データ削除
-	junk_del([
-		PATH_DICT['scenario'],
-		PATH_DICT['video'],
-	])
+	if not debug:
+		junk_del([
+			PATH_DICT['scenario'],
+			PATH_DICT['video'],
+		])
 
 
 main(DEBUG_MODE)
