@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
+from PIL import Image, ImageDraw, ImageFont
 from pathlib import Path
+from PIL import Image
 import re
 
 # -ONS変数メモ-
@@ -8,16 +10,9 @@ import re
 # $22  音楽
 # %200 クリア変数
 
-# デバッグモード
-DEBUG_MODE = 0
-
-# effect管理用変数
-effect_startnum = 10
-effect_list = []
 
 # effect生成時に使う関数
-def effect_edit(t,f):
-	global effect_list
+def effect_edit(t,f, effect_startnum, effect_list):
 
 	# 「何ミリ秒間」、「どの画像効果で」フェードするかを引数で受け取りeffect_listに記録、
 	# エフェクト番号を(effect_startnumからの)連番で発行
@@ -36,7 +31,7 @@ def effect_edit(t,f):
 	else:
 		print('ERROR: effect指定ミス')
 
-	return str(list_num)
+	return str(list_num), effect_list
 
 
 #吉里吉里の命令文及び変数指定をざっくりpythonの辞書に変換するやつ
@@ -85,8 +80,24 @@ def message_replace(txt):
 	return txt
 
 
+#画像傾けて新規で保存
+def image_angle(storage, angle):
+	p = (Path.cwd() / Path(storage.replace(r'"', '')))
+	p_save = str(p) + '_' + str(angle) + '.png'
+
+	im = Image.open(p)
+	im_rotate = im.rotate(angle, resample=Image.BICUBIC, center=(im.width, 300))
+	im_rotate.save(p_save)
+
+	return
+
+
 # txt置換→0.txt出力関数
-def text_cnv(default, zero_txt, scenario):
+def text_cnv(DEBUG_MODE, default, zero_txt, scenario):
+
+	# effect管理用変数
+	effect_startnum = 10
+	effect_list = []
 
 	#default.txtを読み込み
 	with open(default, encoding='cp932', errors='ignore') as f:
@@ -179,7 +190,8 @@ def text_cnv(default, zero_txt, scenario):
 					time1 = '500' if (not d.get('time1')) else d['time1']
 					rule1 = 'fade' if (not d.get('rule1')) else d['rule1']
 
-					line = 'csp -1:bg ' + bgimage + ',' + effect_edit(time1, rule1)
+					ee, effect_list = effect_edit(time1, rule1, effect_startnum, effect_list)
+					line = 'csp -1:bg ' + bgimage + ',' + ee
 
 					if d.get('bgm'):
 						bgm = '$22' if (d['bgm'] == r'&f.music') else ('"data\\bgm\\' + d['bgm'] + '.ogg"')
@@ -188,20 +200,23 @@ def text_cnv(default, zero_txt, scenario):
 				# 画面切り替え
 				elif kr_cmd == 'trans':
 					if (d['method'] == 'universal'):
-						line = 'print ' + effect_edit(d['time'], d['rule'])
+						ee, effect_list = effect_edit(d['time'], d['rule'], effect_startnum, effect_list)
+						line = 'print ' + ee
 
 					else:
-						line = 'print ' + effect_edit(d['time'], 'fade')
+						ee, effect_list = effect_edit(d['time'], 'fade', effect_startnum, effect_list)
+						line = 'print ' + ee
 
 				# 画面切り替え
 				elif kr_cmd == 'antenar':
 					time1 = '500' if (not d.get('time1')) else d['time1']
 					rule1 = 'fade' if (not d.get('rule1')) else d['rule1']
 
-					line = 'print ' + effect_edit(time1, rule1)
+					ee, effect_list = effect_edit(time1, rule1, effect_startnum, effect_list)
+					line = 'print ' + ee
 
 				# 立ち絵?
-				elif kr_cmd == 'image':
+				elif kr_cmd == 'image' or kr_cmd == 'eximage':
 					left = d.get('left') if d.get('left') else '0'
 					top = d.get('top') if d.get('top') else '0'
 
@@ -234,11 +249,30 @@ def text_cnv(default, zero_txt, scenario):
 						var_top = ('%55')
 						var_layer = ('13')
 
+					var_left2 = False
+					var_top2 = False
+
+					if kr_cmd == 'eximage':
+						angle = int(d.get('angle'))
+						
+						if (not angle == 0):
+							angle *= -1
+							#ななめ 座標は画像見て合わせただけ　てきとう
+							image_angle(storage, angle)
+							#x+83 y-150
+							storage = (storage[:-1] + '_' + str(angle) + r'.png"')
+							var_left2 = var_left + '+83'
+							var_top2 = var_top + '-150'
+					
+					if not var_left2:
+						var_left2 = var_left
+						var_top2 = var_top
+
 					if (d.get('visible') == 'true') or (d['layer'] == 'base'):
-						line = ('mov ' + var + ',' + storage + ':mov ' + var_left + ',' + left + ':mov ' + var_top + ',' + top + ':lsp ' + var_layer + ',' + var + ',' + var_left + ',' + var_top + ':print 9')
+						line = ('mov ' + var + ',' + storage + ':mov ' + var_left + ',' + left + ':mov ' + var_top + ',' + top + ':lsp ' + var_layer + ',' + var + ',' + var_left2 + ',' + var_top2 + ':print 9')
 			
 					else:
-						line = ('mov ' + var + ',' + storage + ':mov ' + var_left + ',' + left + ':mov ' + var_top + ',' + top + ':lsph ' + var_layer + ',' + var + ',' + var_left + ',' + var_top + ':print 9')
+						line = ('mov ' + var + ',' + storage + ':mov ' + var_left + ',' + left + ':mov ' + var_top + ',' + top + ':lsph ' + var_layer + ',' + var + ',' + var_left2 + ',' + var_top2 + ':print 9')
 
 				#画像移動
 				elif kr_cmd == 'move':
@@ -312,6 +346,10 @@ def text_cnv(default, zero_txt, scenario):
 
 					line = ('bgm ' + storage)
 
+					#ED用ゴリ押し措置
+					if d['storage'] == 'zigoku11end':
+						line += ':gosub *staffroll'
+
 				#se
 				elif kr_cmd == 'playse' or kr_cmd == 'fadeinse':
 					storage = ('"data\\sound\\' + d['storage'].replace('\'', '') + '.ogg"') if (not d['storage'] == r'&f.music') else '$22'
@@ -373,6 +411,10 @@ def text_cnv(default, zero_txt, scenario):
 				elif kr_cmd == 'resetfont':
 					line = r'rsf'
 
+				#特殊画像移動...のはずなんだけどいろいろめんどくさくなったので
+				elif kr_cmd == 'exmove':
+					line = r'vsp 10,0:vsp 11,0:print 9'
+
 				#他
 				else:
 					if DEBUG_MODE:
@@ -408,10 +450,10 @@ def text_cnv(default, zero_txt, scenario):
 	return
 
 
-def junk_del(delete_list):
+def junk_del(PATH_DICT):
 
 	#リスト内のディレクトリパスでfor
-	for d in delete_list:
+	for d in [PATH_DICT['scenario'], PATH_DICT['video']]:
 
 		#ディレクトリパス内のファイル一覧でfor
 		for p in d.glob('*'):
@@ -422,11 +464,66 @@ def junk_del(delete_list):
 		#ディレクトリも削除
 		d.rmdir()
 
+	for d in [PATH_DICT['system'], PATH_DICT['bgm'], PATH_DICT['rule']]:
+
+		for p in d.glob('*.sli'):
+			p.unlink()
+		for p in d.glob('*.tjs'):
+			p.unlink()
+		for p in d.glob('*.asd'):
+			p.unlink()
+		for p in d.glob('*.txt'):
+			p.unlink()
+	
 	return
 
 
+def staffroll_create():
+	s_path = Path(Path.cwd() / Path(r'data/scenario/スタッフロール.ks'))
+	i_path = Path(Path.cwd() / Path(r'data/staffroll_create.png'))
+	t_path = Path(Path.cwd() / Path(r'data/image/title.png'))
+	ttf = "C:\\Windows\\Fonts\\BIZ-UDMinchoM.ttc" #str必須
+
+	if not Path(ttf).exists():#古いwindowsとかでBIZ-UD明朝がない場合
+		ttf = "C:\\Windows\\Fonts\\msmincho.ttc"#MS明朝なら大体入ってるでしょ
+		
+	with open(s_path) as f:
+		s = f.read()
+		s = s.replace(r'[', '\n'+r'[')
+
+		im = Image.new("RGB", (800, 10000), (0, 0, 0))#とりあえず10000
+		draw = ImageDraw.Draw(im)
+		fsize = 22
+		txt_y = 600
+
+		for l in s.splitlines()[1:]:# 最初の*スタッフロール文字列←これいらないので[1:](最初の行飛ばす)
+			if l == '[resetfont]':
+				fsize = 22
+			elif l == '[r]':
+				txt_y += int(fsize * 1.1)#文字と文字との隙間が0.1文字分と計算
+			elif '[font size=' in l:
+				fsize = int(l[11:13])#フォントサイズだけ取ってくる
+			elif '[' in l:
+				pass
+			else:
+				font = ImageFont.truetype(ttf, fsize)
+				txt_x = 400 - (len(l) * int(fsize * 1.1) / 2)
+				draw.text((txt_x, txt_y), message_replace(l), fill=(255, 255, 255), font=font)
+
+		#画像一番下画像なので
+		im_title = Image.open(t_path)
+		im.paste(im_title, (0, txt_y + fsize))
+		
+		#ここで下の余分なところを消す
+		im_crop = im.crop((0, 0, 800, txt_y + fsize + im_title.height))
+		im_crop.save(i_path)
+
+
 # メイン関数
-def main(debug):
+def main():
+
+	# デバッグモード
+	debug = 0
 
 	#同一階層のパスを変数へ代入
 	same_hierarchy = Path.cwd()
@@ -469,14 +566,14 @@ def main(debug):
 		return
 
 	#txt置換→0.txt出力
-	text_cnv(PATH_DICT['default'], PATH_DICT2['0_txt'], PATH_DICT['scenario'])
+	text_cnv(debug, PATH_DICT['default'], PATH_DICT2['0_txt'], PATH_DICT['scenario'])
+
+	#スタッフロール作成
+	staffroll_create()
 
 	#不要データ削除
 	if not debug:
-		junk_del([
-			PATH_DICT['scenario'],
-			PATH_DICT['video'],
-		])
+		junk_del(PATH_DICT)
 
 
-main(DEBUG_MODE)
+main()

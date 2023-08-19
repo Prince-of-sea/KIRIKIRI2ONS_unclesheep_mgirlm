@@ -65,6 +65,35 @@ return
 	setwindow3 32,470,30,4,24,24,0,2,20,1,1,#999999,16,424,783,583
 return
 ;----------------------------------------
+*staffroll
+	
+	;%150 再生時間
+	;%151 ロール画像x - 使わん
+	;%152 ロール画像y
+	;%153 gettimer
+	;%154 下記参照
+	
+	;zigoku11endの再生時間
+	mov %150,110078
+	
+	lsp 13,"data\staffroll_create.png",0,0
+	getspsize 13,%151,%152
+	sub %152,600
+	
+	resettimer
+	
+	*staffroll_loop
+		gettimer %153
+		
+		;(経過時間/再生時間)*ロール画像y
+		mov %154,%153*%152/%150
+		
+		if %153<%150 amsp 13,0,0-%154:print 1
+		if %153>%150 bgmstop:amsp 13,0,0-%152:print 1:goto *staffroll_end
+	goto *staffroll_loop
+	*staffroll_end
+return
+;----------------------------------------
 *start
 
 rsf
@@ -116,6 +145,7 @@ print 1
 	
 	if %0==11 dwave 0,"data\sound\凛.ogg":bgmstop:csp -1:goto *scenario
 	if %0==12 bgmstop:csp -1:bg "data\image\title1.png",1:systemcall load:reset
+	;if %0==13 bgmstop:csp -1:bg black,9:bgm "data\bgm\zigoku11end.ogg":gosub *staffroll:reset	;スタッフロールテスト
 	if %0==15 bgmstop:csp -1:bg black,9:end
 	
 goto *title_loop
