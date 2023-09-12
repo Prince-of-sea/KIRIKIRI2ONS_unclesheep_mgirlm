@@ -101,10 +101,13 @@ rsf
 ;debug
 ;mov %200,1
 
-bgmvol 60
-sevol 60
-voicevol 60
+bgmvol   60*%230/100
+sevol    60*%231/100
+voicevol 60*%232/100
 
+;初回起動時 - 音量用変数すべて100
+fileexist %130,"gloval.sav"
+if %130==0 mov %230,100:mov %231,100:mov %232,100
 
 setcursor 0,":a/11,80,2;data\system\LineBreak_a.png"
 setcursor 1,":a/11,80,2;data\system\PageBreak_a.png"
@@ -145,10 +148,120 @@ print 1
 	
 	if %0==11 dwave 0,"data\sound\凛.ogg":bgmstop:csp -1:goto *scenario
 	if %0==12 bgmstop:csp -1:bg "data\image\title1.png",1:systemcall load:reset
-	;if %0==13 bgmstop:csp -1:bg black,9:bgm "data\bgm\zigoku11end.ogg":gosub *staffroll:reset	;スタッフロールテスト
+	if %0==13 bgmstop:csp -1:bg black,9:goto *volmenu_GUI
+	;if %0==14 bgmstop:csp -1:bg black,9:bgm "data\bgm\zigoku11end.ogg":gosub *staffroll:reset	;スタッフロールテスト
 	if %0==15 bgmstop:csp -1:bg black,9:end
 	
 goto *title_loop
 ;----------------------------------------
+*volmenu_GUI
+	;https://gist.github.com/Prince-of-sea/325b8ae6912ecf23316a71c3d008480c
+	;文字/数字/スプライト/ボタン
+	;全部130~149までを使ってます - 競合に注意
+	
+	;バー文字列定義
+	mov $130,":s;#FFFFFF#666666○――――――――――"
+	mov $131,":s;#FFFFFF#666666―○―――――――――"
+	mov $132,":s;#FFFFFF#666666――○――――――――"
+	mov $133,":s;#FFFFFF#666666―――○―――――――"
+	mov $134,":s;#FFFFFF#666666――――○――――――"
+	mov $135,":s;#FFFFFF#666666―――――○―――――"
+	mov $136,":s;#FFFFFF#666666――――――○――――"
+	mov $137,":s;#FFFFFF#666666―――――――○―――"
+	mov $138,":s;#FFFFFF#666666――――――――○――"
+	mov $139,":s;#FFFFFF#666666―――――――――○―"
+	mov $140,":s;#FFFFFF#666666――――――――――○"
+	
+*volmenu_loop
+	
+	;文字列変換
+	itoa2 $141,%230
+	itoa2 $142,%231
+	itoa2 $143,%232
+	
+	;バー代入
+	if %230==  0 mov $146,$130
+	if %230== 10 mov $146,$131
+	if %230== 20 mov $146,$132
+	if %230== 30 mov $146,$133
+	if %230== 40 mov $146,$134
+	if %230== 50 mov $146,$135
+	if %230== 60 mov $146,$136
+	if %230== 70 mov $146,$137
+	if %230== 80 mov $146,$138
+	if %230== 90 mov $146,$139
+	if %230==100 mov $146,$140
+	if %231==  0 mov $147,$130
+	if %231== 10 mov $147,$131
+	if %231== 20 mov $147,$132
+	if %231== 30 mov $147,$133
+	if %231== 40 mov $147,$134
+	if %231== 50 mov $147,$135
+	if %231== 60 mov $147,$136
+	if %231== 70 mov $147,$137
+	if %231== 80 mov $147,$138
+	if %231== 90 mov $147,$139
+	if %231==100 mov $147,$140
+	if %232==  0 mov $148,$130
+	if %232== 10 mov $148,$131
+	if %232== 20 mov $148,$132
+	if %232== 30 mov $148,$133
+	if %232== 40 mov $148,$134
+	if %232== 50 mov $148,$135
+	if %232== 60 mov $148,$136
+	if %232== 70 mov $148,$137
+	if %232== 80 mov $148,$138
+	if %232== 90 mov $148,$139
+	if %232==100 mov $148,$140
+	
+	;画面作成
+	lsp 130,":s;#FFFFFF［Ｃｏｎｆｉｇ］", 50, 50
+	lsp 131,":s;#FFFFFF#666666リセット", 400,450
+	lsp 132,":s;#FFFFFF#666666戻る",     550,450
+	
+	lsp 135,":s;#FFFFFFＢＧＭ",           50,150
+	lsp 136,":s;#FFFFFF#666666＜",       200,150
+	lsp 137,$146,                        250,150
+	lsp 138,":s;#FFFFFF#666666＞",       550,150
+	lsp 139,":s;#FFFFFF#666666"+$141,    600,150
+	
+	lsp 140,":s;#FFFFFFＳＥ１",           50,250
+	lsp 141,":s;#FFFFFF#666666＜",       200,250
+	lsp 142,$147,                        250,250
+	lsp 143,":s;#FFFFFF#666666＞",       550,250
+	lsp 144,":s;#FFFFFF#666666"+$142,    600,250
+	
+	lsp 145,":s;#FFFFFFＳＥ２",           50,350
+	lsp 146,":s;#FFFFFF#666666＜",       200,350
+	lsp 147,$148,                        250,350
+	lsp 148,":s;#FFFFFF#666666＞",       550,350
+	lsp 149,":s;#FFFFFF#666666"+$143,    600,350
+	
+	print 1
+	
+	;ボタン定義
+	bclear
+	spbtn 131,131
+	spbtn 132,132
+	spbtn 136,136
+	spbtn 138,138
+	spbtn 141,141
+	spbtn 143,143
+	spbtn 146,146
+	spbtn 148,148
+	
+	;入力待ち
+	btnwait %140
+	
+	if %140==131 mov %230,100:mov %231,100:mov %232,100
+	if %140==132 csp -1:reset
+	if %140==136 if %230!=  0 sub %230,10
+	if %140==138 if %230!=100 add %230,10
+	if %140==141 if %231!=  0 sub %231,10
+	if %140==143 if %231!=100 add %231,10
+	if %140==146 if %232!=  0 sub %232,10
+	if %140==148 if %232!=100 add %232,10
+	
+goto *volmenu_loop
+;----------------------------------------
 *scenario
-

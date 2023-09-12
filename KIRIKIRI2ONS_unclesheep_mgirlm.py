@@ -372,12 +372,12 @@ def text_cnv(DEBUG_MODE, default, zero_txt, scenario):
 				#bgm音量調整
 				elif kr_cmd == 'bgmopt' or kr_cmd == 'fadebgm':
 					volume = d['volume']
-					line = ('bgmvol ' + volume)
+					line = ('bgmvol ' + volume + r'*%230/100')
 
 				#se音量調整
 				elif kr_cmd == 'seopt' or kr_cmd == 'fadese':
 					volume = d['volume']
-					line = ('sevol ' + volume + ':voicevol ' + volume)
+					line = ('sevol ' + volume + r'*%231/100:voicevol ' + volume + r'*%232/100')
 
 				#クリック待ち
 				elif kr_cmd == 'waitclick':
