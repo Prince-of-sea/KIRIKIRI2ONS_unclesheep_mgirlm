@@ -101,13 +101,13 @@ rsf
 ;debug
 ;mov %200,1
 
-bgmvol   60*%230/100
-sevol    60*%231/100
-voicevol 60*%232/100
-
 ;‰‰ñ‹N“® - ‰¹—Ê—p•Ï”‚·‚×‚Ä100
 fileexist %130,"gloval.sav"
 if %130==0 mov %230,100:mov %231,100:mov %232,100
+
+bgmvol   60*%230/100
+sevol    60*%231/100
+voicevol 60*%232/100
 
 setcursor 0,":a/11,80,2;data\system\LineBreak_a.png"
 setcursor 1,":a/11,80,2;data\system\PageBreak_a.png"
